@@ -1,0 +1,126 @@
+﻿@model IEnumerable<LBank.Web.Models.ServerConfigDto>
+
+<h2>Add New Server Configuration</h2>
+
+<form class="row g-3 needs-validation" asp-action="Index" method="post" id="serverConfigForm">
+    <div class="container mt-3">
+        <div class="mb-3 has-validation">
+            <label for="serverName" class="form-label">Server Name</label>
+            <select class="form-control  w-25" id="ServerName" name="ServerName" required>
+                <option value="">--Select a Server--</option>
+                @foreach (var serverName in ViewBag.ServerNames.Items)
+                {
+                    <option value="@serverName">@serverName</option>
+                }
+            </select>
+        </div>
+        <div class="mb-3" has-validation>
+            <label for="url" class="form-label">URL</label>
+            <input type="text" class="form-control w-50" id="url" name="Url" required>
+            <div class="invalid-feedback">
+                Please choose a url.
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="database" class="form-label">Database</label>
+            <input type="text" class="form-control  w-25" id="database" name="Db" required>
+        </div>
+        <div class="mb-3">
+            <label for="ipAddress" class="form-label">IP Address</label>
+            <input type="text" class="form-control  w-25" id="ipAddress" name="IpAddress" required>
+        </div>
+        <div class="mb-3">
+            <label for="domain" class="form-label">Domain</label>
+            <input type="text" class="form-control  w-25" id="domain" name="Domain" required>
+        </div>
+        <div class="mb-3">
+            <label for="cookieDomain" class="form-label">Cookie Domain</label>
+            <input type="text" class="form-control  w-50" id="cookieDomain" name="CookieDomain" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</form>
+
+<h2>Server Configurations</h2>
+
+@* @if (@Model != null)
+{ *@
+<h1>Servers</h1>
+<table class="table" id="serverCollection">
+    <thead>
+        <tr>
+            <th>Server Name</th>
+            <th>URL</th>
+            <th>Database</th>
+            <th>IP Address</th>
+            <th>Domain</th>
+            <th>Cookie Domain</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var serverConfig in Model)
+        {
+            <tr>
+                <td>@serverConfig.ServerName</td>
+                <td>@serverConfig.Url</td>
+                <td>@serverConfig.Db</td>
+                <td>@serverConfig.IpAddress</td>
+                <td>@serverConfig.Domain</td>
+                <td>@serverConfig.CookieDomain</td>
+            </tr>
+        }
+    </tbody>
+</table>
+@* } *@
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#serverConfigForm").submit(function (event) {
+            event.preventDefault();
+
+            var formData = {
+                ServerName: $("#ServerName").val(),
+                Url: $("#url").val(),
+                Db: $("#database").val(),
+                IpAddress: $("#ipAddress").val(),
+                Domain: $("#domain").val(),
+                CookieDomain: $("#cookieDomain").val()
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "/Home/index",
+                contentType: "application/json",
+                data: JSON.stringify(formData),
+                success: function (response) {
+                    if (response.success && response.data && response.data.length > 0) {
+                        var tableBody = $('#serverCollection tbody');
+                        response.data.forEach(function (item) {
+                    tableBody.append(
+                        `<tr>
+                        <td>${item.serverName || ''}</td>
+                        <td>${item.url || ''}</td>
+                        <td>${item.db || ''}</td>
+                        <td>${item.ipAddress || ''}</td>
+                        <td>${item.domain || ''}</td>
+                        <td>${item.cookieDomain || ''}</td>
+                        </tr>`
+                        );
+                    });
+                        $('#serverConfigForm').find('input[type=text], select').val('');
+                    } else {
+                        // Handle no data or error scenario
+                        console.error("No data or error.");
+                    }
+                },
+
+                error: function () {
+                    alert("There was an error. Try again please!");
+                }
+            });
+        });
+    });
+</script>
