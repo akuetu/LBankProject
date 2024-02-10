@@ -18,8 +18,9 @@ namespace LBank.Business
         }
 
         public async Task CreateServerConfig(ServerConfig serverConfig)
-        {          
-          await  _serverConfigParser.CreateServerConfig(serverConfig);           
+        {
+            ArgumentNullException.ThrowIfNull(serverConfig);
+            await  _serverConfigParser.CreateServerConfig(serverConfig);           
         }
 
         public async Task<IEnumerable<string>> GetAllServersName()
@@ -27,7 +28,17 @@ namespace LBank.Business
            return await _serverConfigParser.GetAllServersName();
         }
 
-         
+        public async Task<ServerConfig> GetOneServerConfigs(string serverName)
+        {
+            return await _serverConfigParser.GetOneServerConfigs(serverName);
+        }
+
+        public async Task<bool> UpdateServerConfig(ServerConfig serverConfig)
+        {
+            return serverConfig == null
+                ? throw new ArgumentNullException(nameof(serverConfig))
+                : await _serverConfigParser.UpdateServerConfig(serverConfig);
+        }
     }
 
 }

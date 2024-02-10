@@ -26,11 +26,11 @@ namespace LBank.Repository
             {
                 ReadAllSemaphore.Release();
             }
-        }         
+        }
 
         public async Task CreateServerConfigAsync(ServerConfig config, string filePath)
         {
-            var configs = await ReadAllAsync(filePath);  
+            var configs = await ReadAllAsync(filePath);
             if (configs.Any(c => c.ServerName == config.ServerName))
             {
                 throw new Exception("A config with the same ServerName already exists.");
@@ -50,7 +50,7 @@ namespace LBank.Repository
                     await sw.WriteLineAsync($"DOMAIN{{{config.ServerName}}}={config.Domain}");
                     await sw.WriteLineAsync($"COOKIE_DOMAIN{{{config.ServerName}}}={config.CookieDomain}");
                     await sw.WriteLineAsync($";END {config.ServerName}");
-                    await sw.WriteLineAsync(); 
+                    await sw.WriteLineAsync();
                 }
             }
             finally
@@ -58,7 +58,7 @@ namespace LBank.Repository
                 CreateSemaphore.Release();
             }
         }
-    
+
         public static async Task<List<ServerConfig>> ReadAllAsync(string filePath)
         {
             await ReadSemaphore.WaitAsync();
@@ -68,8 +68,6 @@ namespace LBank.Repository
                 {
                     return new List<ServerConfig>();
                 }
-
-                // Asynchronously read the entire file content
                 var fileContent = await File.ReadAllTextAsync(filePath);
                 var matches = Regex.Matches(fileContent, @";START (.+?)(SERVER_NAME\{.+?\}=(.+?)\n)?(URL\{.+?\}=(.+?)\n)?(DB\{.+?\}=(.+?)\n)?(IP_ADDRESS\{.+?\}=(.+?)\n)?(DOMAIN\{.+?\}=(.+?)\n)?(COOKIE_DOMAIN\{.+?\}=(.+?)\n)?;END .+?", RegexOptions.Singleline);
 
@@ -94,6 +92,54 @@ namespace LBank.Repository
             {
                 ReadSemaphore.Release();
             }
-        }         
+        }
+
+        public async Task<bool> UpdateServerConfigAsync(ServerConfig updatedConfig, string filePath)
+        {
+            var configs = await ReadAllAsync(filePath);
+            var configIndex = configs.FindIndex(c => c.ServerName.TrimEnd('\r') == updatedConfig.ServerName);
+            if (configIndex == -1)
+            {
+                return false;
+            }
+
+            configs[configIndex] = updatedConfig;
+            return await WriteAllAsync(configs, filePath);
+        }
+
+        private async Task<bool> WriteAllAsync(List<ServerConfig> configs, string filePath)
+        {
+            await CreateSemaphore.WaitAsync();
+            bool response = false;
+            try
+            {
+                await using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true))
+                using (var sw = new StreamWriter(stream))
+                {
+                    foreach (var config in configs)
+                    {
+                        await sw.WriteLineAsync($";START {config.ServerName}");
+                        await sw.WriteLineAsync($"SERVER_NAME{{{config.ServerName}}}={config.ServerName}");
+                        await sw.WriteLineAsync($"URL{{{config.ServerName}}}={config.Url}");
+                        await sw.WriteLineAsync($"DB{{{config.ServerName}}}={config.Db}");
+                        await sw.WriteLineAsync($"IP_ADDRESS{{{config.ServerName}}}={config.IpAddress}");
+                        await sw.WriteLineAsync($"DOMAIN{{{config.ServerName}}}={config.Domain}");
+                        await sw.WriteLineAsync($"COOKIE_DOMAIN{{{config.ServerName}}}={config.CookieDomain}");
+                        await sw.WriteLineAsync($";END {config.ServerName}");
+                        await sw.WriteLineAsync();
+                    }
+                }
+                response = true;
+            }
+            catch
+            {
+                response = false;
+            }
+            finally
+            {
+                CreateSemaphore.Release();
+            }
+            return response;
+        }
     }
 }

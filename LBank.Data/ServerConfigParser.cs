@@ -157,6 +157,16 @@ namespace LBank.Repository
             isRealName = match.Success;
             return isRealName ? match.Groups[1].Value : input;
         }
-                
+
+        public async Task<ServerConfig> GetOneServerConfigs(string serverName)
+        {
+            var servers = await ReadServerConfigs();
+            return servers.FirstOrDefault(sc => sc.ServerName == serverName) ?? new ServerConfig();
+        }
+
+        public async Task<bool> UpdateServerConfig(ServerConfig serverConfig)
+        {
+            return await _fileRepository.UpdateServerConfigAsync(serverConfig, FilePath);
+        }
     }
 }

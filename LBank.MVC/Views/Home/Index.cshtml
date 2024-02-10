@@ -1,6 +1,6 @@
 ﻿@model IEnumerable<LBank.Domain.ServerConfig>
 
-<h2>Add New Server Configuration</h2>
+<h4>Add New Server Configuration</h4>
 
 <form class="row g-3 needs-validation" asp-action="Index" method="post" id="serverConfigForm">
     <div class="container mt-3">
@@ -37,15 +37,16 @@
             <label for="cookieDomain" class="form-label">Cookie Domain</label>
             <input type="text" class="form-control  w-50" id="cookieDomain" name="CookieDomain" required>
         </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="submit" class="btn btn-primary">Save</button>       
     </div>
 </form>
 
-<h2>Server Configurations</h2>
 
-@* @if (@Model != null)
-{ *@
-<h1>Servers</h1>
+<hr/>
+
+<h4>Server Configurations</h4>
+
+
 <table class="table" id="serverCollection">
     <thead>
         <tr>
@@ -55,6 +56,7 @@
             <th>IP Address</th>
             <th>Domain</th>
             <th>Cookie Domain</th>
+            <th>Update</th>
         </tr>
     </thead>
     <tbody>
@@ -68,13 +70,12 @@
                 <td>@serverConfig.IpAddress</td>
                 <td>@serverConfig.Domain</td>
                 <td>@serverConfig.CookieDomain</td>
+                <td><a asp-action="Update" asp-controller="Home" asp-route-serverName="@serverConfig.ServerName">Update</a></td>
             </tr>
         }
     </tbody>
 </table>
-@* } *@
-
-
+ 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
     $(document).ready(function () {
@@ -111,8 +112,7 @@
                         );
                     });
                         $('#serverConfigForm').find('input[type=text], select').val('');
-                    } else {
-                        // Handle no data or error scenario
+                    } else {                       
                         console.error("No data or error.");
                     }
                 },

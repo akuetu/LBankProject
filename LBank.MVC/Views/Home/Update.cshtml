@@ -1,0 +1,54 @@
+﻿@model  LBank.Domain.ServerConfig
+
+<h4>Update Server Configuration</h4>
+@if (ViewBag.ServerNames != null && ViewBag.ServerNames.IsSuccess)
+{
+    <div class="alert alert-success" role="alert">
+        @ViewBag.ServerNames.Message
+    </div>
+}
+else if (ViewBag.ServerNames != null)
+{
+    <div class="alert alert-danger" role="alert">    
+        @ViewBag.ServerNames.Message
+    </div>
+}
+
+
+<form class="row g-3 needs-validation" asp-action="Update" method="post" id="serverConfigForm">
+    <div class="container mt-3">
+        <div class="mb-3 has-validation">
+            <label for="serverName" class="form-label">Server Name: </label>
+            <input type="hidden" class="form-control w-50" id="ServerName" name="ServerName" value="@Model.ServerName" required>
+            <label for="serverName" class="form-label"><h4>@Model.ServerName</h4></label>
+        </div>
+        <div class="mb-3" has-validation>
+            <label for="url" class="form-label">URL</label>
+            <input type="text" class="form-control w-50" id="url" name="Url" value="@Model.Url" required>
+            <div class="invalid-feedback">
+                Please choose a url.
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="database" class="form-label">Database</label>
+            <input type="text" class="form-control  w-25" id="database" name="Db" value="@Model.Db" required>
+        </div>
+        <div class="mb-3">
+            <label for="ipAddress" class="form-label">IP Address</label>
+            <input type="text" class="form-control  w-25" id="ipAddress" name="IpAddress" value="@Model.IpAddress" required>
+        </div>
+        <div class="mb-3">
+            <label for="domain" class="form-label">Domain</label>
+            <input type="text" class="form-control  w-25" id="domain" name="Domain" value="@Model.Domain" required>
+        </div>
+        <div class="mb-3">
+            <label for="cookieDomain" class="form-label">Cookie Domain</label>
+            <input type="text" class="form-control  w-50" id="cookieDomain" name="CookieDomain" value="@Model.CookieDomain" required>
+        </div>
+        <div class="d-flex align-items-center">
+            <button type="submit" class="btn btn-primary me-4">Update</button>
+            <a class="btn btn-secondary" asp-action="Index" asp-controller="Home">Cancel</a>
+        </div>
+
+    </div>
+</form>

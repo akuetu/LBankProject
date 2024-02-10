@@ -50,19 +50,33 @@ namespace LBank.Web.Controllers
             return View(new ServerConfig());
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Update(string serverName)
+        {            
+            var server = await _serverConfigService.GetOneServerConfigs(serverName) ?? new ServerConfig();           
+            return View(server);
+        }
+
         [HttpPost]
-        public IActionResult SaveOrUpdate(ServerConfigDto config)
+        public async Task<IActionResult> UpdateAsync(ServerConfig serverConfig)
         {
-            //ServerConfig
+             
             if (ModelState.IsValid)
             {
-                // Implement your saving or updating logic here
-                // For demo purposes, we'll just redirect to the Index action
-                return RedirectToAction("Index");
+                var result = await _serverConfigService.UpdateServerConfig(serverConfig);
+                var message = new ServerMessage
+                {
+                    IsSuccess = result,
+                    Message = result ? $"The server {serverConfig.ServerName} has been updated successfully." :
+                                                $"An error occurred while updating the server name {serverConfig.ServerName}."
+                };
+
+                ViewBag.ServerNames = message;
+
             }
 
-            // If model state is not valid, return to the form with validation messages
-            return View("Index", config);
+            var server = await _serverConfigService.GetOneServerConfigs(serverConfig.ServerName) ?? new ServerConfig();
+            return View(server);
         }
 
 
