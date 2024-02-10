@@ -1,7 +1,10 @@
 using LBank.Business;
+using LBank.Domain;
 using LBank.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<ServerConfigSettings>(builder.Configuration.GetSection("ServerConfig"));
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddTransient<IFileRepository, FileRepository>();

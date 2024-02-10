@@ -1,36 +1,39 @@
 ﻿using LBank.Domain;
+using Microsoft.Extensions.Options;
 using System.Text.RegularExpressions;
 
 namespace LBank.Repository
 {
     public class ServerConfigParser : IServerConfigParser
     {
-        private const string FilePath = "files/servers2.txt";
-        private const string DefaultServerName = "MRAPPPOOLPORTL01";
+
+        private readonly string _filePath;
+        private readonly string _defaultServerName;
 
         private readonly IFileRepository _fileRepository;
 
-
-        public ServerConfigParser(IFileRepository fileRepository)
+        public ServerConfigParser(IOptions<ServerConfigSettings> configSettings, IFileRepository fileRepository)
         {
             _fileRepository = fileRepository;
+            _filePath = configSettings.Value.FilePath;
+            _defaultServerName = configSettings.Value.DefaultServerName;
         }
 
         public async Task<IEnumerable<ServerConfig>> ReadServerConfigs()
         {
-            var content = await _fileRepository.ReadAllLinesFromFileAsync(FilePath);
+            var content = await _fileRepository.ReadAllLinesFromFileAsync(_filePath);
             return ReadServerConfigs(content);
         }
 
         public async Task CreateServerConfig(ServerConfig config)
         {
-           await _fileRepository.CreateServerConfigAsync(config, FilePath);
+           await _fileRepository.CreateServerConfigAsync(config, _filePath);
         }
 
         public async Task<IEnumerable<String>> GetAllServersName()
         {
             var servers = await ReadServerConfigs();
-            return servers.Select(sc => sc.ServerName).Distinct().Except(new[] { DefaultServerName }).ToList(); 
+            return servers.Select(sc => sc.ServerName).Distinct().Except(new[] { _defaultServerName }).ToList(); 
         }
 
         private IEnumerable<ServerConfig> ReadServerConfigs(IEnumerable<string> textLines)
@@ -166,7 +169,7 @@ namespace LBank.Repository
 
         public async Task<bool> UpdateServerConfig(ServerConfig serverConfig)
         {
-            return await _fileRepository.UpdateServerConfigAsync(serverConfig, FilePath);
+            return await _fileRepository.UpdateServerConfigAsync(serverConfig, _filePath);
         }
     }
 }
