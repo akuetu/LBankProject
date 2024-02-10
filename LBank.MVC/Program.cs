@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddTransient<IFileRepository, FileRepository>();
 builder.Services.AddTransient<IServerConfigParser, ServerConfigParser>();
+builder.Services.AddScoped<IServerConfigService, ServerConfigService>();
 
 
 var app = builder.Build();

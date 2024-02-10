@@ -1,12 +1,13 @@
 ﻿using LBank.Domain;
-using LBank.Repository;
 using System.Text.RegularExpressions;
 
-namespace LBank.Business
+namespace LBank.Repository
 {
     public class ServerConfigParser : IServerConfigParser
     {
         private const string FilePath = "files/servers2.txt";
+        private const string DefaultServerName = "MRAPPPOOLPORTL01";
+
         private readonly IFileRepository _fileRepository;
 
 
@@ -21,9 +22,15 @@ namespace LBank.Business
             return ReadServerConfigs(content);
         }
 
-        public void Create(ServerConfig config)
+        public async Task CreateServerConfig(ServerConfig config)
         {
-            _fileRepository.Create(config, FilePath);
+           await _fileRepository.CreateServerConfigAsync(config, FilePath);
+        }
+
+        public async Task<IEnumerable<String>> GetAllServersName()
+        {
+            var servers = await ReadServerConfigs();
+            return servers.Select(sc => sc.ServerName).Distinct().Except(new[] { DefaultServerName }).ToList(); 
         }
 
         private IEnumerable<ServerConfig> ReadServerConfigs(IEnumerable<string> textLines)
@@ -150,7 +157,6 @@ namespace LBank.Business
             isRealName = match.Success;
             return isRealName ? match.Groups[1].Value : input;
         }
-
-
+                
     }
 }

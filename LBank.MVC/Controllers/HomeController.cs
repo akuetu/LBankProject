@@ -8,75 +8,46 @@ namespace LBank.Web.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly IServerConfigParser _serverConfigParser;
+        private readonly IServerConfigService _serverConfigService;
 
-        public HomeController(IServerConfigParser serverConfigParser)
+        public HomeController(IServerConfigService serverConfigService)
         {
-            _serverConfigParser = serverConfigParser;
+            _serverConfigService = serverConfigService;
         }
 
         [HttpGet]
         public async Task<IActionResult> IndexAsync()
         {
-            var serverConfigs = await _serverConfigParser.ReadServerConfigs();
+            var serverConfigs = await _serverConfigService.ReadServerConfigs();         
+                    
+            var serverNames = await _serverConfigService.GetAllServersName();
 
-            // move this to BLL
-            var serverConfigDtos = serverConfigs.Select(sc => new ServerConfigDto
-            {
-                ServerName = sc.ServerName,
-                Url = sc.Url,
-                Db = sc.Db,
-                IpAddress = sc.IpAddress,
-                Domain = sc.Domain,
-                CookieDomain = sc.CookieDomain
-            }).ToList();
-
-            //Interface BL
-            var serverNames = serverConfigs.Select(sc => sc.ServerName).Distinct().Except(new[] { "MRAPPPOOLPORTL01" }).ToList();
             ViewBag.ServerNames = new SelectList(serverNames);
 
-            return View(serverConfigDtos);
+            return View(serverConfigs);
         }
 
 
         [HttpPost]
-        public async Task<IActionResult> IndexAsync([FromBody] ServerConfigDto config)
+        public async Task<IActionResult> IndexAsync([FromBody] ServerConfig serverConfig)
         {
             if (ModelState.IsValid)
-            {          
-                _serverConfigParser.Create(new ServerConfig
-                {
-                    ServerName = config.ServerName,
-                    Url = config.Url,
-                    Db = config.Db,
-                    IpAddress = config.IpAddress,
-                    Domain = config.Domain,
-                    CookieDomain = config.CookieDomain
-                });
-                var serverConfigs = await _serverConfigParser.ReadServerConfigs();
-                //Goes to BL
-                var serverConfigDtos = serverConfigs.Select(sc => new ServerConfigDto
-                {
-                    ServerName = sc.ServerName,
-                    Url = sc.Url,
-                    Db = sc.Db,
-                    IpAddress = sc.IpAddress,
-                    Domain = sc.Domain,
-                    CookieDomain = sc.CookieDomain
-                }).ToList();
+            {
+                await _serverConfigService.CreateServerConfig(serverConfig);
+                var serverConfigs = await _serverConfigService.ReadServerConfigs();               
+                var serverNames = await _serverConfigService.GetAllServersName();
 
-                //Interface BL
-                var serverNames = serverConfigs.Select(sc => sc.ServerName).Distinct().Except(new[] { "MRAPPPOOLPORTL01" }).ToList();
                 ViewBag.ServerNames = new SelectList(serverNames);
 
                 if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 {
-                    return Json(new { success = true, data = serverConfigDtos });
+                    return Json(new { success = true, data = serverConfigs });
                 }
-                return View(serverConfigDtos);
+
+                return View(serverConfigs);
             }
 
-            return View(new ServerConfigDto());
+            return View(new ServerConfig());
         }
 
         [HttpPost]

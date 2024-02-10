@@ -6,6 +6,6 @@ namespace LBank.Repository
     {
         public Task<IEnumerable<string>> ReadAllLinesFromFileAsync(string filePath);
 
-        public void Create(ServerConfig config, string filePath);
+        public Task CreateServerConfigAsync(ServerConfig config, string filePath);
     }
 }
